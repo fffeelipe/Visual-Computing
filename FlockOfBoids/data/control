@@ -1,0 +1,9 @@
+control
+movex	move in x axis	3	SLIDER	x	0	1.0	0.0
+movez	move in z axis	3	SLIDER	y	0	1.0	0.0
+rotatexz	rotate in xz plane	3	SLIDER	z	0	1.0	0.0
+rotateyz	rotate in yz plane	3	SLIDER	rz	0	1.0	0.0
+rotatexyn	rotate in xy plane positive	3	SLIDER	slider	0	1.0	0.0
+moveyn	move in y negative axis	3	SLIDER	slider	0	1.0	0.0
+moveyp	move in  positive axis	1	BUTTON	Left Thumb	0	0.0	0.0
+rotatexyp	rotate in xy plane positive	1	BUTTON	Right Thumb	0	0.0	0.0

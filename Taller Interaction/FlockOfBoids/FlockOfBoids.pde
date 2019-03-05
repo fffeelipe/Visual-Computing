@@ -25,24 +25,6 @@
 import frames.primitives.*;
 import frames.core.*;
 import frames.processing.*;
-import java.*;
-import org.gamecontrolplus.*;
-import net.java.games.input.*;
-
-public ControlIO control;
-public ControlDevice device;
-
-public float movex; 
-public float movez;
-public float rotatexz;
-public float rotateyz; // Rotations
-public float rotatexyn;
-public float moveyn;
-public float moveyp; // Buttons
-public float rotatexyp;
-  
-
-
 
 Scene scene;
 //flock bounding box
@@ -50,20 +32,13 @@ int flockWidth = 1280;
 int flockHeight = 720;
 int flockDepth = 600;
 boolean avoidWalls = true;
-int fcount, lastm;
-float frate;
-int fint = 3;
-public int initBoidNum = 900; // amount of boids to start the program with
+
+int initBoidNum = 900; // amount of boids to start the program with
 ArrayList<Boid> flock;
-ArrayList<Boid> randomFlock;
 public Frame avatar;
 boolean animate = true;
-int c1[] = new int[4];
+
 void setup() {
-  //control stuff
-  openWirelessControl();
-  //end control stuff
-  
   size(1000, 800, P3D);
   scene = new Scene(this);
   scene.setBoundingBox(new Vector(0, 0, 0), new Vector(flockWidth, flockHeight, flockDepth));
@@ -74,62 +49,16 @@ void setup() {
   flock = new ArrayList();
   for (int i = 0; i < initBoidNum; i++)
     flock.add(new Boid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2)));
-  for(int i = 0; i<4; i++){
-    c1[i] = (int)(Math.random()*(initBoidNum-1));
-  }
-  randomFlock = new ArrayList();
-  for(int i = 0; i<8; i++){
-    randomFlock.add(flock.get((int)(Math.random()*(initBoidNum-1))));
-  }
 }
-
-void openWirelessControl() {
-  control = ControlIO.getInstance(this);
-  device = control.getMatchedDevice("control");
-  if (device == null) {
-    println("No suitable device configured");
-    System.exit(0); // End the program NOW!
-  }
-}
-
-public void getUserInput() {
-  movex = device.getSlider("movex").getValue(); 
-  movez = device.getSlider("movez").getValue();
-  rotatexz = device.getSlider("rotatexz").getValue();
-  rotateyz = device.getSlider("rotateyz").getValue(); // Rotations
-  rotatexyn = device.getSlider("rotatexyn").getValue() == -1? 0:-1;
-  moveyn = device.getSlider("movex").getValue() == -1? 0:-1;
-  moveyp = device.getButton("moveyp").pressed()?1:0; // Buttons
-  rotatexyp = device.getButton("rotatexyp").pressed()?1:0;
-
-}
-
 
 void draw() {
   background(10, 50, 25);
   ambientLight(128, 128, 128);
   directionalLight(255, 255, 255, 0, 1, -100);
-  getUserInput();
   walls();
   scene.traverse();
   // uncomment to asynchronously update boid avatar. See mouseClicked()
   // updateAvatar(scene.trackedFrame("mouseClicked"));
-  
-  drawDeCastejau(randomFlock);
-  draw_CubicHermite(flock.get(c1[0]),flock.get(c1[1]),flock.get(c1[2]),flock.get(c1[3]));
-  draw_Bezier3(flock.get(c1[0]+1),flock.get(c1[1]+1),flock.get(c1[2]+1),flock.get(c1[3]+1));
-  /*
-  fcount += 1;
-  int m = millis();
-  if (m - lastm > 1000 * fint) {
-    frate = float(fcount) / fint;
-    fcount = 0;
-    lastm = m;
-    println("fps: " + frate);
-  }
-  fill(0);
-  text("fps: " + frate, 10, 20);
-  */
 }
 
 void walls() {

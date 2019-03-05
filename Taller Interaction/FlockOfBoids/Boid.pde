@@ -1,10 +1,3 @@
-import org.gamecontrolplus.*;
-import net.java.games.input.*;
-
-
-  
-PShape void_shape;
-
 class Boid {
   public Frame frame;
   // fields
@@ -16,10 +9,6 @@ class Boid {
   float sc = 3; // scale factor for the render of the boid
   float flap = 0;
   float t = 0;
-  boolean facevertex = true;
-  FaceVertex representation;
-  
-
 
   Boid(Vector inPos) {
     position = new Vector();
@@ -116,17 +105,16 @@ class Boid {
   }
 
   void move() {
-    if(this.frame == avatar){
-    }else{
-      velocity.add(acceleration); // add acceleration to velocity
-      velocity.limit(maxSpeed); // make sure the velocity vector magnitude does not
-      // exceed maxSpeed
-      position.add(velocity); // add velocity to position
-      frame.setPosition(position);
-      frame.setRotation(Quaternion.multiply(new Quaternion(new Vector(0, 1, 0), atan2(-velocity.z(), velocity.x())), 
-        new Quaternion(new Vector(0, 0, 1), asin(velocity.y() / velocity.magnitude()))));
-      acceleration.multiply(0); // reset acceleration
-    }
+    if(this.frame == avatar)
+      return;
+    velocity.add(acceleration); // add acceleration to velocity
+    velocity.limit(maxSpeed); // make sure the velocity vector magnitude does not
+    // exceed maxSpeed
+    position.add(velocity); // add velocity to position
+    frame.setPosition(position);
+    frame.setRotation(Quaternion.multiply(new Quaternion(new Vector(0, 1, 0), atan2(-velocity.z(), velocity.x())), 
+      new Quaternion(new Vector(0, 0, 1), asin(velocity.y() / velocity.magnitude()))));
+    acceleration.multiply(0); // reset acceleration
   }
 
   void checkBounds() {
@@ -166,18 +154,25 @@ class Boid {
       fill(color(255, 0, 0));
     }
 
-    
-    
-    if(representation == null){
-      if(facevertex){
-        representation = new FaceVertex(sc);
-      }else{
-        representation = new WingedEdge(sc);
-      }
-    }
-    representation.draw();
-    
+    //draw boid
+    beginShape(TRIANGLES);
+    vertex(30 * sc, 0, 0);
+    vertex(-3 * sc, 2 * sc, 0);
+    vertex(-3 * sc, -2 * sc, 0);
+
+    vertex(3 * sc, 0, 0);
+    vertex(-3 * sc, 2 * sc, 0);
+    vertex(-3 * sc, 0, 2 * sc);
+
+    vertex(3 * sc, 0, 0);
+    vertex(-3 * sc, 0, 2 * sc);
+    vertex(-3 * sc, -2 * sc, 0);
+
+    vertex(-3 * sc, 0, 2 * sc);
+    vertex(-3 * sc, 2 * sc, 0);
+    vertex(-3 * sc, -2 * sc, 0);
+    endShape();
 
     popStyle();
-  } 
+  }
 }

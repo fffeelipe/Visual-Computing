@@ -1,6 +1,6 @@
 import java.*;
 
-boolean immediate = true, genShape = true;
+boolean immediate = false, genShape = false;
 HashMap<String, PShape> shape = new HashMap();
 
 PShape grid;
@@ -94,7 +94,6 @@ class FaceVertex{
         for(Face f : faces)f.get_shape();
         genShape = true;
       }else {
-        
         shape(grid);
     }    }
   }
