@@ -18,7 +18,24 @@ class Boid {
   float t = 0;
   boolean facevertex = true;
   FaceVertex representation;
+
   
+  void move() {
+    if(this.frame == avatar){
+      
+    }else{
+      velocity.add(acceleration); // add acceleration to velocity
+      velocity.limit(maxSpeed); // make sure the velocity vector magnitude does not
+      // exceed maxSpeed
+      position.add(velocity); // add velocity to position
+      frame.setPosition(position);
+      frame.setRotation(Quaternion.multiply(new Quaternion(new Vector(0, 1, 0), atan2(-velocity.z(), velocity.x())), 
+        new Quaternion(new Vector(0, 0, 1), asin(velocity.y() / velocity.magnitude()))));
+      acceleration.multiply(0); // reset acceleration
+    }
+  }
+
+
 
 
   Boid(Vector inPos) {
@@ -115,21 +132,7 @@ class Boid {
     acceleration.add(Vector.multiply(separation, 1));
   }
 
-  void move() {
-    if(this.frame == avatar){
-    }else{
-      velocity.add(acceleration); // add acceleration to velocity
-      velocity.limit(maxSpeed); // make sure the velocity vector magnitude does not
-      // exceed maxSpeed
-      position.add(velocity); // add velocity to position
-      frame.setPosition(position);
-      frame.setRotation(Quaternion.multiply(new Quaternion(new Vector(0, 1, 0), atan2(-velocity.z(), velocity.x())), 
-        new Quaternion(new Vector(0, 0, 1), asin(velocity.y() / velocity.magnitude()))));
-      acceleration.multiply(0); // reset acceleration
-    }
-  }
-
-  void checkBounds() {
+    void checkBounds() {
     if (position.x() > flockWidth)
       position.setX(0);
     if (position.x() < 0)

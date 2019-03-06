@@ -35,11 +35,9 @@ public ControlDevice device;
 public float movex; 
 public float movez;
 public float rotatexz;
-public float rotateyz; // Rotations
-public float rotatexyn;
-public float moveyn;
-public float moveyp; // Buttons
-public float rotatexyp;
+public float rotateyz;
+public float movey;
+public float rotatexy;
   
 
 
@@ -93,17 +91,29 @@ void openWirelessControl() {
 }
 
 public void getUserInput() {
-  movex = device.getSlider("movex").getValue(); 
+  movex = device.getSlider("movex").getValue();
   movez = device.getSlider("movez").getValue();
   rotatexz = device.getSlider("rotatexz").getValue();
   rotateyz = device.getSlider("rotateyz").getValue(); // Rotations
-  rotatexyn = device.getSlider("rotatexyn").getValue() == -1? 0:-1;
-  moveyn = device.getSlider("movex").getValue() == -1? 0:-1;
-  moveyp = device.getButton("moveyp").pressed()?1:0; // Buttons
-  rotatexyp = device.getButton("rotatexyp").pressed()?1:0;
+  rotatexy = device.getButton("rotatexyn").pressed()? -1:0;
+  movey = device.getSlider("moveyn").getValue() == -1? 0:1;
+  movey += device.getButton("moveyp").pressed()?-1:0; // Buttons
+  rotatexy += device.getButton("rotatexyp").pressed()?1:0;
+  
+  println("movex" + movex);
+  println("movey" + movey);
+  println("movez" + movez);
+  println("rotatexy" + rotatexy);
+  println("rotateyz" + rotateyz);
+  println("rotatexz" + rotatexz);
+  
 
 }
 
+void controlInteraction() {
+  scene.translate(10 * movex, 10 * movey, 10 * movez);
+  scene.rotate(rotateyz * 20 * PI / width, rotatexz * 20 * PI / width, rotatexy * 20 * PI / width);
+}
 
 void draw() {
   background(10, 50, 25);
@@ -118,6 +128,11 @@ void draw() {
   drawDeCastejau(randomFlock);
   draw_CubicHermite(flock.get(c1[0]),flock.get(c1[1]),flock.get(c1[2]),flock.get(c1[3]));
   draw_Bezier3(flock.get(c1[0]+1),flock.get(c1[1]+1),flock.get(c1[2]+1),flock.get(c1[3]+1));
+  
+  if (avatar == null){
+    controlInteraction();
+  }
+  
   /*
   fcount += 1;
   int m = millis();
