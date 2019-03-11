@@ -3,26 +3,104 @@ import peasy.*;
 PVector lightDir = new PVector();
 PShader defaultShader;
 PGraphics shadowMap;
-int landscape = 1;
- 
+PGraphics canvas;
+import frames.primitives.*;
+import frames.core.*;
+import frames.processing.*;
+import org.gamecontrolplus.*;
+import net.java.games.input.*;
+
+public ControlIO control;
+public ControlDevice device;
+
+public float movex; 
+public float movez;
+public float rotatexz;
+public float rotateyz;
+public float movey;
+public float rotatexy;
+
+public boolean control_box= true;
+boolean thirdPerson = false;
+
+Scene scene;
+
+int flockWidth = 1280;
+int flockHeight = 720;
+int flockDepth = 600;
+public Frame avatar;
+public boolean go_avatar = true;
+Boid boid, cam1;
+
 void setup() {
-    size(800, 800, P3D);
-    new PeasyCam(this, 300).rotateX(4.0);
-    initShadowPass();
-    initDefaultPass();
+  //new PeasyCam(this, 300).rotateX(4.0);
+  initShadowPass();
+  initDefaultPass();
+  openWirelessControl();    
+  size(1370, 700, P3D);
+  //size(500, 500, P3D);
+  scene = new Scene(this);
+  scene.setBoundingBox(new Vector(0, 0, 0), new Vector(flockWidth, flockHeight, flockDepth));
+  scene.setAnchor(scene.center());
+  scene.setFieldOfView(PI / 3);
+  scene.fitBall();
+  
+  boid = new Boid(new Vector(200, 200, 400));
+  cam1 = new Boid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2));
+  avatar = boid.frame;
+  Toroid t1 = new Toroid(new Vector(0,0,0), new Quaternion(0,0,0,0.1), 100.0, 200.0);
+  Toroid t2 = new Toroid(new Vector(0,0,0), new Quaternion(0.2,1.4,1,1), 20.0, 50.0);
+  Toroid t3 = new Toroid(new Vector(300,500,300), new Quaternion(1.4,1,0,0.1), 10.0, 50.0);
+  Toroid t4 = new Toroid(new Vector(600,200,400), new Quaternion(0.1,5,1,0.6), 20.0, 50.0);
+  Toroid t5 = new Toroid(new Vector(450,-100,0), new Quaternion(7.5,1,0.3), 15.0, 40.0);
+  Toroid t6 = new Toroid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2), 
+  new Quaternion(0,0,0,0), 20.0, 100.0);
+  Toroid t7 = new Toroid(new Vector(1300,500,300), new Quaternion(1.4,1,0,0.1), 10.0, 50.0);
+  Toroid t8 = new Toroid(new Vector(1600,200,400), new Quaternion(0.1,5,1,0.6), 20.0, 50.0);
+  Toroid t9 = new Toroid(new Vector(1450,-100,0), new Quaternion(7.5,1,-1,0.3), 15.0, 40.0);
+  //scene.eye().setReference(cam1.frame);
+  //scene.interpolateTo(cam1.frame);
+  //shadowMap.beginDraw(); shadowMap.perspective(60 * DEG_TO_RAD, 1, 10, 1000); shadowMap.endDraw();
+  //shadowMap.beginDraw(); shadowMap.ortho(-200, 200, -200, 200, 10, 400); shadowMap.endDraw();
 }
- 
+
+void openWirelessControl() {
+  control = ControlIO.getInstance(this);
+  device = control.getMatchedDevice("control");
+  if (device == null) {
+    println("No suitable device configured");
+    System.exit(0); // End the program NOW!
+  }
+}
+
+public void getUserInput() {
+  movex = device.getSlider("movex").getValue();
+  movez = device.getSlider("movez").getValue();
+  rotatexz = device.getSlider("rotatexz").getValue();
+  rotateyz = device.getSlider("rotateyz").getValue(); // Rotations
+  rotatexy = device.getButton("rotatexyn").pressed()? -1:0;
+  movey = device.getSlider("moveyn").getValue() == -1? 0:1;
+  movey += device.getButton("moveyp").pressed()?-1:0; // Buttons
+  rotatexy += device.getButton("rotatexyp").pressed()?1:0;
+  
+}
+
+
+
 void draw() {
- 
-    // Calculate the light direction (actually scaled by negative distance)
-    float lightAngle = frameCount * 0.002;
-    lightDir.set(sin(lightAngle) * 160, 160, cos(lightAngle) * 160);
- 
+    getUserInput();
+  float lightAngle = frameCount * 0.002;
+    lightDir.set(avatar.position().x(),avatar.position().y(),avatar.position().z());
+    println("x: " + avatar.position().x());
+    println("y: " + avatar.position().y());
+    println("z: " + avatar.position().z());
+    
     // Render shadow pass
     shadowMap.beginDraw();
     shadowMap.camera(lightDir.x, lightDir.y, lightDir.z, 0, 0, 0, 0, 1, 0);
     shadowMap.background(0xffffffff); // Will set the depth to 1.0 (maximum depth)
-    renderLandscape(shadowMap);
+    canvas = shadowMap;
+    scene.traverse();
     shadowMap.endDraw();
     shadowMap.updatePixels();
  
@@ -32,17 +110,63 @@ void draw() {
  
     // Render default pass
     background(0xff222222);
-    renderLandscape(g);
+    canvas = g;
+    scene.traverse();
  
     // Render light source
     pushMatrix();
-    fill(0xffffffff);
-    //translate(lightDir.x, lightDir.y, lightDir.z);
-    box(5);
+    //fill(0,255,0);
+    translate(150, 150, 150);
+    box(50);
     popMatrix();
- 
+    //spotLight(51, 102, 126,avatar.worldLocation(new Vector(0,0,0)).x(), avatar.worldLocation(new Vector(0,0,0)).y() , avatar.worldLocation(new Vector(0,0,0)).z(), -avatar.zAxis().x(),-avatar.zAxis().y(),-avatar.zAxis().z(), PI/4, 2 );
+  
+  
+  
+  
+  
 }
- 
+
+
+void thirdPerson() {
+  scene.eye().setReference(avatar);
+  scene.interpolateTo(avatar);
+}
+
+void resetEye() {
+  // same as: scene.eye().setReference(null);
+  scene.eye().setReference(cam1.frame);
+  scene.interpolateTo(cam1.frame);
+  scene.lookAt(scene.center());
+}
+
+void keyPressed() {
+  switch (key) {
+  case 't':
+    scene.shiftTimers();
+    break;
+  case 'p':
+    println("Frame rate: " + frameRate);
+    break;
+  case ' ':
+    if(!thirdPerson)
+      control_box = !control_box;
+    break;
+    
+  case 'f':
+    if (scene.eye().reference() == avatar){
+      resetEye();
+      thirdPerson = false;
+    }
+    else{
+      control_box =false;
+      thirdPerson();
+      thirdPerson = true;
+    }
+    break;
+    
+  }
+}
 public void initShadowPass() {
     shadowMap = createGraphics(2048, 2048, P3D);
     String[] vertSource = {
@@ -177,7 +301,6 @@ void updateDefaultShader() {
  
     // Calculate light direction normal, which is the transpose of the inverse of the
     // modelview matrix and send it to the default shader.
-    
     float lightNormalX = lightDir.x * modelviewInv.m00 + lightDir.y * modelviewInv.m10 + lightDir.z * modelviewInv.m20;
     float lightNormalY = lightDir.x * modelviewInv.m01 + lightDir.y * modelviewInv.m11 + lightDir.z * modelviewInv.m21;
     float lightNormalZ = lightDir.x * modelviewInv.m02 + lightDir.y * modelviewInv.m12 + lightDir.z * modelviewInv.m22;
@@ -187,58 +310,4 @@ void updateDefaultShader() {
     // Send the shadowmap to the default shader
     defaultShader.set("shadowMap", shadowMap);
  
-}
- 
-public void keyPressed() {
-    if(key != CODED) {
-        if(key >= '1' && key <= '3')
-            landscape = key - '0';
-        else if(key == 'd') {
-            shadowMap.beginDraw(); shadowMap.ortho(-200, 200, -200, 200, 10, 400); shadowMap.endDraw();
-        } else if(key == 's') {
-            shadowMap.beginDraw(); shadowMap.perspective(60 * DEG_TO_RAD, 1, 10, 1000); shadowMap.endDraw();
-        }
-    }
-}
- 
-public void renderLandscape(PGraphics canvas) {
-    switch(landscape) {
-        case 1: {
-            float offset = -frameCount * 0.01;
-            canvas.fill(0xffff5500);
-            for(int z = -5; z < 6; ++z)
-                for(int x = -5; x < 6; ++x) {
-                    canvas.pushMatrix();
-                    canvas.translate(x * 12, sin(offset + x) * 20 + cos(offset + z) * 20, z * 12);
-                    canvas.box(10, 100, 10);
-                    canvas.popMatrix();
-                }
-        } break;
-        case 2: {
-            float angle = -frameCount * 0.0015, rotation = TWO_PI / 20;
-            canvas.fill(0xffff5500);
-            for(int n = 0; n < 20; ++n, angle += rotation) {
-                canvas.pushMatrix();
-                canvas.translate(sin(angle) * 70, cos(angle * 4) * 10, cos(angle) * 70);
-                canvas.box(10, 100, 10);
-                canvas.popMatrix();
-            }
-            canvas.fill(0xff0055ff);
-            canvas.sphere(50);
-        } break;
-        case 3: {
-            float angle = -frameCount * 0.0015, rotation = TWO_PI / 20;
-            canvas.fill(0xffff5500);
-            for(int n = 0; n < 20; ++n, angle += rotation) {
-                canvas.pushMatrix();
-                canvas.translate(sin(angle) * 70, cos(angle) * 70, 0);
-                canvas.box(10, 10, 100);
-                canvas.popMatrix();
-            }
-            canvas.fill(0xff00ff55);
-            canvas.sphere(50);
-        }
-    }
-    //canvas.fill(0xff222222);
-    //canvas.box(360, 5, 360);
 }

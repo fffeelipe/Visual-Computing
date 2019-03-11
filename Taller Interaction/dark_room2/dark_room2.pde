@@ -34,8 +34,8 @@ Boid boid, cam1;
 
 void setup() {
   openWirelessControl();  
-  //size(1370, 700, P3D);
-  size(500, 500, P3D);
+  size(1370, 700, P3D);
+  //size(500, 500, P3D);
   scene = new Scene(this);
   scene.setBoundingBox(new Vector(0, 0, 0), new Vector(flockWidth, flockHeight, flockDepth));
   scene.setAnchor(scene.center());
@@ -89,7 +89,7 @@ void controlInteraction() {
 void draw() {
   noStroke();
 
-  sphere(100);
+  //sphere(100);
 
   getUserInput();
   background(0, 0, 0);
@@ -99,7 +99,6 @@ void draw() {
   -avatar.zAxis().x(),-avatar.zAxis().y(),-avatar.zAxis().z(),
   PI/4, 2 
   );
-  walls();
   scene.traverse();
   
   
