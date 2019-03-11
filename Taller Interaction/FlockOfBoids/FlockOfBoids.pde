@@ -27,21 +27,6 @@ public Frame avatar;
 
 Boid boid;
 
-//testing
-int pts = 40; 
-float angle = 0;
-float radius = 100.0;
-
-// lathe segments
-int segments = 60;
-float latheAngle = 0;
-float latheRadius = 200.0;
-
-//vertices
-PVector vertices[], vertices2[];
-//end testing
-
-
 void setup() {
   openWirelessControl();  
   //size(1370, 700, P3D);
@@ -54,6 +39,15 @@ void setup() {
   
   boid = new Boid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2));
   avatar = boid.frame;
+  Toroid t1 = new Toroid(new Vector(0,0,0), new Quaternion(0,0,0,0.1), 100.0, 200.0);
+  Toroid t2 = new Toroid(new Vector(0,0,0), new Quaternion(0.2,1.4,1,1), 20.0, 50.0);
+  Toroid t3 = new Toroid(new Vector(300,500,300), new Quaternion(1.4,1,0,0.1), 10.0, 50.0);
+  Toroid t4 = new Toroid(new Vector(600,200,400), new Quaternion(0.1,5,1,0.6), 20.0, 50.0);
+  Toroid t5 = new Toroid(new Vector(450,-100,0), new Quaternion(7.5,1,0.3), 15.0, 40.0);
+  Toroid t6 = new Toroid(new Vector(110,50,0), new Quaternion(0.2,1.4,1,1), 20.0, 50.0);
+  Toroid t7 = new Toroid(new Vector(1300,500,300), new Quaternion(1.4,1,0,0.1), 10.0, 50.0);
+  Toroid t8 = new Toroid(new Vector(1600,200,400), new Quaternion(0.1,5,1,0.6), 20.0, 50.0);
+  Toroid t9 = new Toroid(new Vector(1450,-100,0), new Quaternion(7.5,1,-1,0.3), 15.0, 40.0);
   
 }
 
@@ -79,8 +73,8 @@ public void getUserInput() {
 }
 
 void controlInteraction() {
-  scene.translate(10 * movex, 10 * movey, 10 * movez);
-  scene.rotate(rotateyz * 20 * PI / width, rotatexz * 20 * PI / width, rotatexy * 20 * PI / width);
+  scene.translate(2 * movex, 2 * movey, 2 * movez);
+  scene.rotate(rotateyz * 2 * PI / width, rotatexz * 2 * PI / width, rotatexy * 2 * PI / width);
 }
 
 
@@ -91,57 +85,17 @@ void draw() {
   sphere(100);
 
   getUserInput();
-  spotLight(51, 102, 126, 80, 20, 40, -1, 0, 0, PI/2, 2);
-
   background(0, 0, 0);
-  directionalLight(255, 255, 255, 0, 1, -5);
+  directionalLight(5, 5, 5, 0, 1, -5);
   spotLight(51, 102, 126,
   avatar.worldLocation(new Vector(0,0,0)).x(), avatar.worldLocation(new Vector(0,0,0)).y() , avatar.worldLocation(new Vector(0,0,0)).z(), 
   -avatar.zAxis().x(),-avatar.zAxis().y(),-avatar.zAxis().z(),
   PI/4, 2 
   );
-  println("x: " + avatar.zAxis().x());
-  println("y: " + avatar.zAxis().y());
-  println("z: " + -avatar.zAxis().z());
   walls();
   scene.traverse();
   if (control_box && !thirdPerson){
     controlInteraction();
-  }
-  
-  
-  //testing
-  // initialize point arrays
-  vertices = new PVector[pts+1];
-  vertices2 = new PVector[pts+1];
-
-  // fill arrays
-  for(int i=0; i<=pts; i++){
-    vertices[i] = new PVector();
-    vertices2[i] = new PVector();
-    vertices[i].x = latheRadius + sin(radians(angle))*radius;
-    vertices[i].z = cos(radians(angle))*radius;
-    angle+=360.0/pts;
-  }
-
-  // draw toroid
-  latheAngle = 0;
-  for(int i=0; i<=segments; i++){
-    beginShape(QUAD_STRIP);
-    for(int j=0; j<=pts; j++){
-      if (i>0){
-        vertex(vertices2[j].x, vertices2[j].y, vertices2[j].z);
-      }
-      vertices2[j].x = cos(radians(latheAngle))*vertices[j].x;
-      vertices2[j].y = sin(radians(latheAngle))*vertices[j].x;
-      vertices2[j].z = vertices[j].z;
-      // optional helix offset
-      vertex(vertices2[j].x, vertices2[j].y, vertices2[j].z);
-    }
-    // create extra rotation for helix
-    latheAngle+=360.0/segments;
-    
-    endShape();
   }
   
   
