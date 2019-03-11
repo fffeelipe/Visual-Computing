@@ -16,23 +16,14 @@ class Boid {
   }  
 
   void move() {
-    if (!control_box){
-        if(thirdPerson){
-          frame.rotate(rotateyz * 20 * PI / width, rotatexz * -20 * PI / width, rotatexy * 20 * PI / width, 0.05);
-            Vector delta = new Vector(0,0,0);
-            delta.add(frame.xAxis().x() *10 * movex, frame.xAxis().y() *10 * movex, frame.xAxis().z() *10 * movex);
-            delta.add(frame.yAxis().x() *10 * movey, frame.yAxis().y() *10 * movey, frame.yAxis().z() *10 * movey);
-            delta.add(frame.zAxis().x() *10 * movez, frame.zAxis().y() *10 * movez, frame.zAxis().z() *10 * movez);
-            frame.translate(delta);
-        }else{
-          frame.rotate(rotateyz * 20 * PI / width, rotatexz * -20 * PI / width, rotatexy * 20 * PI / width, 0.05);
-          Vector delta = new Vector(0,0,0);
-          delta.add(scene.eye().xAxis().x() *10 * movex, scene.eye().xAxis().y() *10 * movex, scene.eye().xAxis().z() *10 * movex);
-          delta.add(scene.eye().yAxis().x() *10 * movey, scene.eye().yAxis().y() *10 * movey, scene.eye().yAxis().z() *10 * movey);
-          delta.add(scene.eye().zAxis().x() *10 * movez, scene.eye().zAxis().y() *10 * movez, scene.eye().zAxis().z() *10 * movez);
-          frame.translate(delta);
-        }
-      }
+    if(scene.eye().reference() == frame){
+    frame.rotate(rotateyz * 20 * PI / width, rotatexz * -20 * PI / width, rotatexy * 20 * PI / width, 0.05);
+    Vector delta = new Vector(0,0,0);
+    delta.add(frame.xAxis().x() *10 * movex, frame.xAxis().y() *10 * movex, frame.xAxis().z() *10 * movex);
+    delta.add(frame.yAxis().x() *10 * movey, frame.yAxis().y() *10 * movey, frame.yAxis().z() *10 * movey);
+    delta.add(frame.zAxis().x() *10 * movez, frame.zAxis().y() *10 * movez, frame.zAxis().z() *10 * movez);
+    frame.translate(delta);
+    }
   }
 
 
