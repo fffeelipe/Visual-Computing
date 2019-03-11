@@ -52,7 +52,7 @@ class FaceVertex{
     vertexs = new ArrayList();
     faces = new ArrayList();
     int it = 0;
-    for(int a = -1; a<2; a+=2)for(int b = -1; b<2; b+=2)for(int c = -1; c<2; c+=2){
+    for(int a = 1; a<2; a+=2)for(int b = 1; b<2; b+=2)for(int c = 1; c<2; c+=2){
     vertexs.add( new Vector(3*a * sc, 0, 0)); // pos 0
     vertexs.add( new Vector(-3*a * sc, 2*b * sc, 0)); // pos  1
     vertexs.add( new Vector(-3*a * sc, -2*b * sc, 0)); // pos 2
@@ -81,6 +81,7 @@ class FaceVertex{
     for(int i = 0; i<3; i++) faces.get(it*4 + 3).get_vertexs().add(vertexs.get(it*4 + f4[i]));
     
     it++;
+    
     }
   }
   public void draw(){

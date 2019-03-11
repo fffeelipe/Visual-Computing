@@ -22,7 +22,11 @@ class Boid {
   
   void move() {
     if(this.frame == avatar){
-      
+      if (!control_box){
+        position.add(new Vector(10 * movex, 10 * movey, 10 * movez));
+        this.frame.setPosition(position);
+        this.frame.rotate(rotatexy * 20 * PI / width, rotatexz * -20 * PI / width, rotateyz * 20 * PI / width, 0.1);
+      }
     }else{
       velocity.add(acceleration); // add acceleration to velocity
       velocity.limit(maxSpeed); // make sure the velocity vector magnitude does not
@@ -134,17 +138,17 @@ class Boid {
 
     void checkBounds() {
     if (position.x() > flockWidth)
-      position.setX(0);
-    if (position.x() < 0)
       position.setX(flockWidth);
+    if (position.x() < 0)
+      position.setX(0);
     if (position.y() > flockHeight)
-      position.setY(0);
-    if (position.y() < 0)
       position.setY(flockHeight);
+    if (position.y() < 0)
+      position.setY(0);
     if (position.z() > flockDepth)
-      position.setZ(0);
-    if (position.z() < 0)
       position.setZ(flockDepth);
+    if (position.z() < 0)
+      position.setZ(0);
   }
 
   void render() {

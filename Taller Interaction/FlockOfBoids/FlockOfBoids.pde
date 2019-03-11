@@ -1,64 +1,150 @@
-/**
- * Flock of Boids
- * by Jean Pierre Charalambos.
- *
- * This example displays the famous artificial life program "Boids", developed by
- * Craig Reynolds in 1986 [1] and then adapted to Processing by Matt Wetmore in
- * 2010 (https://www.openprocessing.org/sketch/6910#), in 'third person' eye mode.
- * The Boid under the mouse will be colored blue. If you click on a boid it will
- * be selected as the scene avatar for the eye to follow it.
- *
- * 1. Reynolds, C. W. Flocks, Herds and Schools: A Distributed Behavioral Model. 87.
- * http://www.cs.toronto.edu/~dt/siggraph97-course/cwr87/
- * 2. Check also this nice presentation about the paper:
- * https://pdfs.semanticscholar.org/73b1/5c60672971c44ef6304a39af19dc963cd0af.pdf
- * 3. Google for more...
- *
- * Press ' ' to switch between the different eye modes.
- * Press 'a' to toggle (start/stop) animation.
- * Press 'p' to print the current frame rate.
- * Press 'm' to change the boid visual mode.
- * Press 'v' to toggle boids' wall skipping.
- * Press 's' to call scene.fitBallInterpolation().
- */
 
 import frames.primitives.*;
 import frames.core.*;
 import frames.processing.*;
+import org.gamecontrolplus.*;
+import net.java.games.input.*;
+
+public ControlIO control;
+public ControlDevice device;
+
+public float movex; 
+public float movez;
+public float rotatexz;
+public float rotateyz;
+public float movey;
+public float rotatexy;
+
+public boolean control_box= true;
+boolean thirdPerson = false;
 
 Scene scene;
-//flock bounding box
+
 int flockWidth = 1280;
 int flockHeight = 720;
 int flockDepth = 600;
-boolean avoidWalls = true;
-
-int initBoidNum = 900; // amount of boids to start the program with
-ArrayList<Boid> flock;
 public Frame avatar;
-boolean animate = true;
+
+Boid boid;
+
+//testing
+int pts = 40; 
+float angle = 0;
+float radius = 100.0;
+
+// lathe segments
+int segments = 60;
+float latheAngle = 0;
+float latheRadius = 200.0;
+
+//vertices
+PVector vertices[], vertices2[];
+//end testing
+
 
 void setup() {
-  size(1000, 800, P3D);
+  openWirelessControl();  
+  //size(1370, 700, P3D);
+  size(500, 500, P3D);
   scene = new Scene(this);
   scene.setBoundingBox(new Vector(0, 0, 0), new Vector(flockWidth, flockHeight, flockDepth));
   scene.setAnchor(scene.center());
   scene.setFieldOfView(PI / 3);
   scene.fitBall();
-  // create and fill the list of boids
-  flock = new ArrayList();
-  for (int i = 0; i < initBoidNum; i++)
-    flock.add(new Boid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2)));
+  
+  boid = new Boid(new Vector(flockWidth / 2, flockHeight / 2, flockDepth / 2));
+  avatar = boid.frame;
+  
 }
 
+void openWirelessControl() {
+  control = ControlIO.getInstance(this);
+  device = control.getMatchedDevice("control");
+  if (device == null) {
+    println("No suitable device configured");
+    System.exit(0); // End the program NOW!
+  }
+}
+
+public void getUserInput() {
+  movex = device.getSlider("movex").getValue();
+  movez = device.getSlider("movez").getValue();
+  rotatexz = device.getSlider("rotatexz").getValue();
+  rotateyz = device.getSlider("rotateyz").getValue(); // Rotations
+  rotatexy = device.getButton("rotatexyn").pressed()? -1:0;
+  movey = device.getSlider("moveyn").getValue() == -1? 0:1;
+  movey += device.getButton("moveyp").pressed()?-1:0; // Buttons
+  rotatexy += device.getButton("rotatexyp").pressed()?1:0;
+  
+}
+
+void controlInteraction() {
+  scene.translate(10 * movex, 10 * movey, 10 * movez);
+  scene.rotate(rotateyz * 20 * PI / width, rotatexz * 20 * PI / width, rotatexy * 20 * PI / width);
+}
+
+
+
 void draw() {
-  background(10, 50, 25);
-  ambientLight(128, 128, 128);
-  directionalLight(255, 255, 255, 0, 1, -100);
+  noStroke();
+
+  sphere(100);
+
+  getUserInput();
+  spotLight(51, 102, 126, 80, 20, 40, -1, 0, 0, PI/2, 2);
+
+  background(0, 0, 0);
+  directionalLight(255, 255, 255, 0, 1, -5);
+  spotLight(51, 102, 126,
+  avatar.worldLocation(new Vector(0,0,0)).x(), avatar.worldLocation(new Vector(0,0,0)).y() , avatar.worldLocation(new Vector(0,0,0)).z(), 
+  -avatar.zAxis().x(),-avatar.zAxis().y(),-avatar.zAxis().z(),
+  PI/4, 2 
+  );
+  println("x: " + avatar.zAxis().x());
+  println("y: " + avatar.zAxis().y());
+  println("z: " + -avatar.zAxis().z());
   walls();
   scene.traverse();
-  // uncomment to asynchronously update boid avatar. See mouseClicked()
-  // updateAvatar(scene.trackedFrame("mouseClicked"));
+  if (control_box && !thirdPerson){
+    controlInteraction();
+  }
+  
+  
+  //testing
+  // initialize point arrays
+  vertices = new PVector[pts+1];
+  vertices2 = new PVector[pts+1];
+
+  // fill arrays
+  for(int i=0; i<=pts; i++){
+    vertices[i] = new PVector();
+    vertices2[i] = new PVector();
+    vertices[i].x = latheRadius + sin(radians(angle))*radius;
+    vertices[i].z = cos(radians(angle))*radius;
+    angle+=360.0/pts;
+  }
+
+  // draw toroid
+  latheAngle = 0;
+  for(int i=0; i<=segments; i++){
+    beginShape(QUAD_STRIP);
+    for(int j=0; j<=pts; j++){
+      if (i>0){
+        vertex(vertices2[j].x, vertices2[j].y, vertices2[j].z);
+      }
+      vertices2[j].x = cos(radians(latheAngle))*vertices[j].x;
+      vertices2[j].y = sin(radians(latheAngle))*vertices[j].x;
+      vertices2[j].z = vertices[j].z;
+      // optional helix offset
+      vertex(vertices2[j].x, vertices2[j].y, vertices2[j].z);
+    }
+    // create extra rotation for helix
+    latheAngle+=360.0/segments;
+    
+    endShape();
+  }
+  
+  
 }
 
 void walls() {
@@ -83,23 +169,17 @@ void walls() {
   popStyle();
 }
 
-void updateAvatar(Frame frame) {
-  if (frame != avatar) {
-    avatar = frame;
-    if (avatar != null)
-      thirdPerson();
-    else if (scene.eye().reference() != null)
-      resetEye();
-  }
+
+
+void mouseWheel(MouseEvent event) {
+  scene.scale(event.getCount() * 20);
 }
 
-// Sets current avatar as the eye reference and interpolate the eye to it
 void thirdPerson() {
   scene.eye().setReference(avatar);
   scene.interpolateTo(avatar);
 }
 
-// Resets the eye
 void resetEye() {
   // same as: scene.eye().setReference(null);
   scene.eye().resetReference();
@@ -107,72 +187,30 @@ void resetEye() {
   scene.fitBallInterpolation();
 }
 
-// picks up a boid avatar, may be null
-void mouseClicked() {
-  // two options to update the boid avatar:
-  // 1. Synchronously
-  updateAvatar(scene.track("mouseClicked", mouseX, mouseY));
-  // which is the same as these two lines:
-  // scene.track("mouseClicked", mouseX, mouseY);
-  // updateAvatar(scene.trackedFrame("mouseClicked"));
-  // 2. Asynchronously
-  // which requires updateAvatar(scene.trackedFrame("mouseClicked")) to be called within draw()
-  // scene.cast("mouseClicked", mouseX, mouseY);
-}
-
-// 'first-person' interaction
-void mouseDragged() {
-  if (scene.eye().reference() == null)
-    if (mouseButton == LEFT)
-      // same as: scene.spin(scene.eye());
-      scene.spin();
-    else if (mouseButton == RIGHT)
-      // same as: scene.translate(scene.eye());
-      scene.translate();
-    else
-      // same as: scene.zoom(mouseX - pmouseX, scene.eye());
-      scene.zoom(mouseX - pmouseX);
-}
-
-// highlighting and 'third-person' interaction
-void mouseMoved(MouseEvent event) {
-  // 1. highlighting
-  scene.cast("mouseMoved", mouseX, mouseY);
-  // 2. third-person interaction
-  if (scene.eye().reference() != null)
-    // press shift to move the mouse without looking around
-    if (!event.isShiftDown())
-      scene.lookAround();
-}
-
-void mouseWheel(MouseEvent event) {
-  // same as: scene.scale(event.getCount() * 20, scene.eye());
-  scene.scale(event.getCount() * 20);
-}
-
 void keyPressed() {
   switch (key) {
-  case 'a':
-    animate = !animate;
-    break;
-  case 's':
-    if (scene.eye().reference() == null)
-      scene.fitBallInterpolation();
-    break;
   case 't':
     scene.shiftTimers();
     break;
   case 'p':
     println("Frame rate: " + frameRate);
     break;
-  case 'v':
-    avoidWalls = !avoidWalls;
-    break;
   case ' ':
-    if (scene.eye().reference() != null)
-      resetEye();
-    else if (avatar != null)
-      thirdPerson();
+    if(!thirdPerson)
+      control_box = !control_box;
     break;
+    
+  case 'f':
+    if (scene.eye().reference() != null){
+      resetEye();
+      thirdPerson = false;
+    }
+    else if (avatar != null){
+      control_box =false;
+      thirdPerson();
+      thirdPerson = true;
+    }
+    break;
+    
   }
 }

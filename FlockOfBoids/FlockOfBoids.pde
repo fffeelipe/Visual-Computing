@@ -51,11 +51,12 @@ boolean avoidWalls = true;
 int fcount, lastm;
 float frate;
 int fint = 3;
-public int initBoidNum = 900; // amount of boids to start the program with
+public int initBoidNum = 1; // amount of boids to start the program with
 ArrayList<Boid> flock;
 ArrayList<Boid> randomFlock;
 public Frame avatar;
 boolean animate = true;
+public boolean control_box= false;
 int c1[] = new int[4];
 void setup() {
   //control stuff
@@ -79,6 +80,7 @@ void setup() {
   for(int i = 0; i<8; i++){
     randomFlock.add(flock.get((int)(Math.random()*(initBoidNum-1))));
   }
+  avatar = flock.get(0).frame;
 }
 
 void openWirelessControl() {
@@ -125,11 +127,11 @@ void draw() {
   // uncomment to asynchronously update boid avatar. See mouseClicked()
   // updateAvatar(scene.trackedFrame("mouseClicked"));
   
-  drawDeCastejau(randomFlock);
-  draw_CubicHermite(flock.get(c1[0]),flock.get(c1[1]),flock.get(c1[2]),flock.get(c1[3]));
-  draw_Bezier3(flock.get(c1[0]+1),flock.get(c1[1]+1),flock.get(c1[2]+1),flock.get(c1[3]+1));
+  //drawDeCastejau(randomFlock);
+  //draw_CubicHermite(flock.get(c1[0]),flock.get(c1[1]),flock.get(c1[2]),flock.get(c1[3]));
+  //draw_Bezier3(flock.get(c1[0]+1),flock.get(c1[1]+1),flock.get(c1[2]+1),flock.get(c1[3]+1));
   
-  if (avatar == null){
+  if (control_box){
     controlInteraction();
   }
   
@@ -169,15 +171,7 @@ void walls() {
   popStyle();
 }
 
-void updateAvatar(Frame frame) {
-  if (frame != avatar) {
-    avatar = frame;
-    if (avatar != null)
-      thirdPerson();
-    else if (scene.eye().reference() != null)
-      resetEye();
-  }
-}
+
 
 // Sets current avatar as the eye reference and interpolate the eye to it
 void thirdPerson() {
@@ -197,7 +191,8 @@ void resetEye() {
 void mouseClicked() {
   // two options to update the boid avatar:
   // 1. Synchronously
-  updateAvatar(scene.track("mouseClicked", mouseX, mouseY));
+  //updateAvatar(scene.track("mouseClicked", mouseX, mouseY));
+  control_box = !control_box;
   // which is the same as these two lines:
   // scene.track("mouseClicked", mouseX, mouseY);
   // updateAvatar(scene.trackedFrame("mouseClicked"));
@@ -234,7 +229,7 @@ void mouseMoved(MouseEvent event) {
 void mouseWheel(MouseEvent event) {
   // same as: scene.scale(event.getCount() * 20, scene.eye());
   scene.scale(event.getCount() * 20);
-}
+}  
 
 void keyPressed() {
   switch (key) {
